@@ -37,6 +37,12 @@ def create_log_file():
             writer = csv.writer(file)
             writer.writerow(["timestamp", "event_type", "file_path"])
 
+# this function writes each file event into the csv file for later usage
+def write_to_log(event_type, file_path):
+    with open(LOG_FILE, "a", newline = "") as file:
+        writer = csv.writer(file)
+        writer.writerow([datetime.now(), event_type, file_path])
+
 
 # this class describes what to do when these file events happen (create, modify, delete, move)
 class MyHandler(FileSystemEventHandler):
