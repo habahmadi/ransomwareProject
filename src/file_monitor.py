@@ -35,3 +35,34 @@ class MyHandler(FileSystemEventHandler):
     # runs when a file is moved or renamed
     def on_moved(self, event):
         print("File moved or renamed:", event.src_path)
+
+
+# this block of code starts the monitoring
+if __name__ == "__main__":
+
+    # now create object from our handler class
+    event_handler = MyHandler()
+
+    # create the observer
+    observer = Observer()
+
+    # tell observer which folder to watch
+    observer.schedule(event_handler, WATCH_FOLDER, recursive = True)
+
+    # now start watching the folder
+    observer.start()
+
+    print("Monitoring started...")
+    print("Watching folder:", WATCH_FOLDER)
+
+    try:
+        # keep program running
+        while True:
+            time.sleep(1)
+
+    except KeyboardInterrupt:
+        # stop monitoring when user presses ctrl + c
+        print("\nMonitoring stopped.")
+        observer.stop()
+
+    observer.join()
