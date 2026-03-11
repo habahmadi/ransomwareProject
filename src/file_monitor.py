@@ -24,6 +24,19 @@ LOG_FOLDER = os.path.join(project_root, "logs")
 # path to the csv file where events will be saved
 LOG_FILE = os.path.join(LOG_FOLDER, "file_events.csv")
 
+# this function creates the csv file if it does not already exist
+def create_log_file():
+
+    # checking to make sure logs folder exists
+    if not os.path.exists(LOG_FOLDER):
+        os.makedirs(LOG_FOLDER)
+
+    # if csv file does not exist, create it and add headings
+    if not os.path.exists(LOG_FILE):
+        with open(LOG_FILE, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(["timestamp", "event_type", "file_path"])
+
 
 # this class describes what to do when these file events happen (create, modify, delete, move)
 class MyHandler(FileSystemEventHandler):
