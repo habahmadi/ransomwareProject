@@ -1,7 +1,9 @@
 # importing modules which will be needed for file monitoring
 
-import os       # used for file paths
-import time     # used to keep monitor running
+import os                       # used for file paths
+import time                     # used to keep monitor running
+import csv                      # used to write file events into csv
+from datetime import datetime   # used to get date and time of each event for logs
 
 # watchdog used to monitor file system events
 from watchdog.observers import Observer
@@ -15,6 +17,12 @@ project_root = os.path.dirname(current_dir)
 
 # path to the folder we want to monitor
 WATCH_FOLDER = os.path.join(project_root, "test_environment")
+
+# path to the logs folder
+LOG_FOLDER = os.path.join(project_root, "logs")
+
+# path to the csv file where events will be saved
+LOG_FILE = os.path.join(LOG_FOLDER, "file_events.csv")
 
 
 # this class describes what to do when these file events happen (create, modify, delete, move)
