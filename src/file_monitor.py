@@ -50,22 +50,29 @@ class MyHandler(FileSystemEventHandler):
     # runs when a new file is created
     def on_created(self, event):
         print("File created:", event.src_path)
+        write_to_log("created", event.src_path)
 
     # runs when a file is modified
     def on_modified(self, event):
         print("File modified:", event.src_path)
+        write_to_log("modified", event.src_path)
 
     # runs when a file is deleted
     def on_deleted(self, event):
         print("File deleted:", event.src_path)
+        write_to_log("deleted", event.src_path)
 
     # runs when a file is moved or renamed
     def on_moved(self, event):
         print("File moved or renamed:", event.src_path)
+        write_to_log("moved_or_renamed", event.src_path)
 
 
 # this block of code starts the monitoring
 if __name__ == "__main__":
+
+    # create the csv log file before monitoring starts
+    create_log_file()
 
     # now create object from our handler class
     event_handler = MyHandler()
