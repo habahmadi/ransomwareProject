@@ -14,6 +14,11 @@ project_root = os.path.dirname(current_dir)
 # path to the folder where test files will be created
 TEST_FOLDER = os.path.join(project_root, "test_environment")
 
+# makes sure test folder exists (for good practice)
+def create_test_folder():
+    if not os.path.exists(TEST_FOLDER):
+        os.makedirs(TEST_FOLDER)
+
 # this function creates a normal test file
 def create_file():
 
@@ -36,7 +41,24 @@ def modify_file():
 
     print("Modified file:", file_path)
 
+# this function renames the file
+def rename_file():
+
+    old_name = "normal_file_1.txt"
+    new_name = "normal_file_renamed.txt"
+
+    old_path = os.path.join(TEST_FOLDER, old_name)
+    new_path = os.path.join(TEST_FOLDER, new_name)
+
+    os.rename(old_path, new_path)
+
+    print("Renamed file:", old_path, "to", new_path)
+
+
+
 if __name__ == "__main__":
+
+    create_test_folder()
 
     create_file()
 
@@ -44,3 +66,8 @@ if __name__ == "__main__":
     time.sleep(2)
 
     modify_file()
+
+    # wait a bit before renaming the file
+    time.sleep(2)
+
+    rename_file()
