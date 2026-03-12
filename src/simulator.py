@@ -19,6 +19,17 @@ def create_test_folder():
     if not os.path.exists(TEST_FOLDER):
         os.makedirs(TEST_FOLDER)
 
+
+# this function removes old files so its used as a cleanup function
+def clean_test_environment():
+    for file_name in os.listdir(TEST_FOLDER):
+        file_path = os.path.join(TEST_FOLDER, file_name)
+
+        if os.path.isfile(file_path):
+            os.remove(file_path)
+
+    print("Test environment cleaned.")
+
 # this function creates a normal test file
 def create_file():
 
@@ -59,6 +70,7 @@ def rename_file():
 if __name__ == "__main__":
 
     create_test_folder()
+    clean_test_environment()
 
     create_file()
 
