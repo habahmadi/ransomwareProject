@@ -66,6 +66,25 @@ def rename_file():
     print("Renamed file:", old_path, "to", new_path)
 
 
+# this function defines actions that represent normal user behaviour
+def normal_behaviour():
+
+    # create a normal file
+    create_file()
+
+    # wait before modifying the file
+    time.sleep(2)
+
+    # modify the file
+    modify_file()
+
+    # wait again before renaming
+    time.sleep(2)
+
+    # rename the file
+    rename_file()
+
+
 
 # this function creates multiple files which will later be used for ransomware testing
 # from here on below, the functions should relate to ransomware-like behaviour. the functions above define normal behaviour
