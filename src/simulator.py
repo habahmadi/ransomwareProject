@@ -114,7 +114,11 @@ def ransomware_attack():
         # only target the victim files that were created earlier
         if os.path.isfile(old_path) and file_name.startswith("victim_file"):
 
-            # this part simulates encryption
+            # first read the file (simulating ransomware scanning files)
+            with open(old_path, "r") as file:
+                data = file.read()
+
+            # then modify the file to simulate encryption
             with open(old_path, "a") as file:
                 file.write("This file has been encrypted.\n")
 
