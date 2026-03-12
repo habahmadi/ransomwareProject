@@ -25,7 +25,22 @@ def create_file():
 
     print("Created file:", file_path)
 
-# this simply runs the simulator
+# this function adds more text into an existing file. All of these functions Im creating is to depict normal file behaviour
+def modify_file():
+
+    file_name = "normal_file_1.txt"
+    file_path = os.path.join(TEST_FOLDER, file_name)
+
+    with open(file_path, "a") as file:
+        file.write("This file was edited normally.\n")
+
+    print("Modified file:", file_path)
+
 if __name__ == "__main__":
 
     create_file()
+
+    # wait a bit before editing the file
+    time.sleep(2)
+
+    modify_file()
