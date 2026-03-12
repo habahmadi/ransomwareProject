@@ -132,21 +132,37 @@ def ransomware_attack():
             time.sleep(0.2)
 
 
+# this function asks the user which simulation they want to run (this menu is temporary for now, just used for testing purposes only)
+def choose_simulation():
+
+    print("Choose simulation type:")
+    print("1. Normal behaviour")
+    print("2. Ransomware behaviour")
+
+    choice = input("Enter 1 or 2: ")
+
+    # if 1, run the normal file activity
+    if choice == "1":
+        normal_behaviour()
+
+    # if 2, run the ransomware style activity
+    elif choice == "2":
+        create_multiple_files()
+        time.sleep(2)
+        ransomware_attack()
+
+    # handle invalid input
+    else:
+        print("Invalid choice. Please run the program again.")
+
 # This if block will be changing many times for testing purposes.
-# Before it was testing normal behaviour, now its testing ransoware-like behaviour
 if __name__ == "__main__":
 
     # make sure the test folder exists
     create_test_folder()
 
-    # remove old files so fresh start every time
+    # remove old files from previous runs
     clean_test_environment()
 
-    # create victim files that ransomware will target
-    create_multiple_files()
-
-    # wait a moment before the attack starts
-    time.sleep(2)
-
-    # simulate ransomware behaviour
-    ransomware_attack()
+    # ask the user which simulation they want to run
+    choose_simulation()
