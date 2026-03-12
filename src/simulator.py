@@ -83,22 +83,51 @@ def create_multiple_files():
         time.sleep(1)
 
 
+# this function simulates ransomware behaviour
+# it quickly modifies and renames many files which is typical behaviour for ransomware
+def ransomware_attack():
 
+    # loop through every file inside test folder
+    for file_name in os.listdir(TEST_FOLDER):
+
+        old_path = os.path.join(TEST_FOLDER, file_name)
+
+        # only target the victim files that were created earlier
+        if os.path.isfile(old_path) and file_name.startswith("victim_file"):
+
+            # this part simulates encryption
+            with open(old_path, "a") as file:
+                file.write("This file has been encrypted.\n")
+
+            print("Modified file:", old_path)
+
+            # typical ransomware often changes file extensions after encryption so I'm doing it here as well
+            new_name = file_name + ".locked"
+            new_path = os.path.join(TEST_FOLDER, new_name)
+
+            os.rename(old_path, new_path)
+
+            print("Renamed file:", old_path, "to", new_path)
+
+            # very small delay to simulate ransomware behaviour
+            time.sleep(0.2)
+
+
+# This if block will be changing many times for testing purposes.
+# Before it was testing normal behaviour, now its testing ransoware-like behaviour
 if __name__ == "__main__":
 
+    # make sure the test folder exists
     create_test_folder()
+
+    # remove old files so fresh start every time
     clean_test_environment()
 
+    # create victim files that ransomware will target
     create_multiple_files()
 
-    create_file()
-
-    # wait a bit before editing the file
+    # wait a moment before the attack starts
     time.sleep(2)
 
-    modify_file()
-
-    # wait a bit before renaming the file
-    time.sleep(2)
-
-    rename_file()
+    # simulate ransomware behaviour
+    ransomware_attack()
