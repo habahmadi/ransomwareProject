@@ -67,10 +67,29 @@ def rename_file():
 
 
 
+# this function creates multiple files which will later be used for ransomware testing
+# from here on below, the functions should relate to ransomware-like behaviour. the functions above define normal behaviour
+# so the two can be differentiated
+def create_multiple_files():
+
+    for i in range(1, 6):
+        file_name = "victim_file_" + str(i) + ".txt"
+        file_path = os.path.join(TEST_FOLDER, file_name)
+
+        with open(file_path, "w") as file:
+            file.write("This is a normal user file.\n")
+
+        print("Created file:", file_path)
+        time.sleep(1)
+
+
+
 if __name__ == "__main__":
 
     create_test_folder()
     clean_test_environment()
+
+    create_multiple_files()
 
     create_file()
 
