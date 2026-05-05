@@ -49,22 +49,32 @@ def write_to_log(event_type, file_path, dest_path = ""):
 class MyHandler(FileSystemEventHandler):
 
     # runs when a new file is created
+    # runs when a new file is created
     def on_created(self, event):
+        # ignore folder events, we only care about files
+        if event.is_directory:
+            return
         print("File created:", event.src_path)
         write_to_log("created", event.src_path)
 
     # runs when a file is modified
     def on_modified(self, event):
+        if event.is_directory:
+            return
         print("File modified:", event.src_path)
         write_to_log("modified", event.src_path)
 
     # runs when a file is deleted
     def on_deleted(self, event):
+        if event.is_directory:
+            return
         print("File deleted:", event.src_path)
         write_to_log("deleted", event.src_path)
 
     # runs when a file is moved or renamed
     def on_moved(self, event):
+        if event.is_directory:
+            return
         print("File moved or renamed:", event.src_path, "->", event.dest_path)
         write_to_log("moved_or_renamed", event.src_path, event.dest_path)
 
