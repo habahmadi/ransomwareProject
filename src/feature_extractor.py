@@ -63,10 +63,19 @@ def extract_features(window):
 if __name__ == "__main__":
     df = load_events()
     print("Loaded", len(df), "events from", LOG_FILE)
-    print()
 
-     # for each event, build its feature row from the sliding window
+    # build a list of feature dicts, one per event
+    rows = []
     for i in range(len(df)):
         w = get_window_events(i, df)
         feats = extract_features(w)
-        print("Event", i, "->", feats)
+        # also keep the timestamp so we know when this happened
+        feats["timestamp"] = df.loc[i, "timestamp"]
+        rows.append(feats)
+
+    # turn the list of dicts into a dataframe and save
+    out = pd.DataFrame(rows)
+    out_path = os.path.join(root, "logs", "features.csv")
+    out.to_csv(out_path, index=False)
+
+    print("Saved", len(out), "feature rows to", out_path)
