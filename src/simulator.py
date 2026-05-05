@@ -144,20 +144,26 @@ def choose_simulation():
     print("2. Ransomware behaviour")
 
     choice = input("Enter 1 or 2: ")
+    rounds = int(input("How many times to run it? "))
 
-    # if 1, run the normal file activity
-    if choice == "1":
-        normal_behaviour()
+    for r in range(rounds):
+        print("\n--- Round", r + 1, "---")
 
-    # if 2, run the ransomware style activity
-    elif choice == "2":
-        create_multiple_files()
-        time.sleep(2)
-        ransomware_attack()
+        # clean up between rounds so each one starts fresh
+        clean_test_environment()
 
-    # handle invalid input
-    else:
-        print("Invalid choice. Please run the program again.")
+        if choice == "1":
+            normal_behaviour()
+        elif choice == "2":
+            create_multiple_files()
+            time.sleep(2)
+            ransomware_attack()
+        else:
+            print("Invalid choice")
+            return
+
+        # small pause between rounds
+        time.sleep(1)
 
 # This if block will be changing many times for testing purposes.
 if __name__ == "__main__":
