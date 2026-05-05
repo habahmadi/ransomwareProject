@@ -13,9 +13,10 @@ LOG_FILE = os.path.join(root, "logs", "file_events.csv")
 window_secs = 5
 
 
-def load_events():
+def load_events(path=LOG_FILE):
     # read csv and parse timestamp
-    df = pd.read_csv(LOG_FILE)
+    # path is optional, so defaults to the live log file
+    df = pd.read_csv(path)
     df["timestamp"] = pd.to_datetime(df["timestamp"])
     df = df.sort_values("timestamp").reset_index(drop=True)
     return df
@@ -60,22 +61,43 @@ def extract_features(window):
     }
 
 
-if __name__ == "__main__":
-    df = load_events()
-    print("Loaded", len(df), "events from", LOG_FILE)
+def build_features(path, label):
+    # load events from this specific file
+    df = load_events(path)
 
-    # build a list of feature dicts, one per event
+    # build feature row for every event
     rows = []
     for i in range(len(df)):
         w = get_window_events(i, df)
         feats = extract_features(w)
-        # also keep the timestamp so we know when this happened
         feats["timestamp"] = df.loc[i, "timestamp"]
+        # tag every row with its label so the ML model knows what it is
+        feats["label"] = label
         rows.append(feats)
 
-    # turn the list of dicts into a dataframe and save
-    out = pd.DataFrame(rows)
-    out_path = os.path.join(root, "logs", "features.csv")
-    out.to_csv(out_path, index=False)
+    return pd.DataFrame(rows)
 
-    print("Saved", len(out), "feature rows to", out_path)
+if __name__ == "__main__":
+
+    # paths to the two labelled datasets
+    normal_path = os.path.join(root, "logs", "normal_events.csv")
+    ransom_path = os.path.join(root, "logs", "ransomware_events.csv")
+
+    # extract features from both and then labelling as we go
+    # so we set 0 = normal, 1 = ransomware
+    print("Extracting features from normal events...")
+    normal_df = build_features(normal_path, 0)
+    print("Got", len(normal_df), "normal feature rows")
+
+    print("Extracting features from ransomware events...")
+    ransom_df = build_features(ransom_path, 1)
+    print("Got", len(ransom_df), "ransomware feature rows")
+
+    # stick them together into one big training dataset
+    combined = pd.concat([normal_df, ransom_df], ignore_index=True)
+
+    # and then save it
+    out_path = os.path.join(root, "logs", "training_data.csv")
+    combined.to_csv(out_path, index=False)
+
+    print("Saved", len(combined), "total rows to", out_path)
