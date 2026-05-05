@@ -71,17 +71,31 @@ def normal_behaviour():
 
     # create a normal file
     create_file()
-
-    # wait before modifying the file
     time.sleep(2)
 
-    # modify the file
+    # modify it
     modify_file()
-
-    # wait again before renaming
     time.sleep(2)
 
-    # rename the file
+    # create another file with a different name
+    other_path = os.path.join(TEST_FOLDER, "notes.txt")
+    with open(other_path, "w") as f:
+        f.write("some notes\n")
+    print("Created file:", other_path)
+    time.sleep(2)
+
+    # edit it twice to simulate someone typing
+    with open(other_path, "a") as f:
+        f.write("more notes\n")
+    print("Modified file:", other_path)
+    time.sleep(3)
+
+    with open(other_path, "a") as f:
+        f.write("even more notes\n")
+    print("Modified file:", other_path)
+    time.sleep(2)
+
+    # rename the original one
     rename_file()
 
 
