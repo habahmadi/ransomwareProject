@@ -1,7 +1,1 @@
-flask
-watchdog
-scikit-learn
-pandas
-numpy
-joblib
-matplotlib
+watchdog==6.0.0

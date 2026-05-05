@@ -35,13 +35,14 @@ def create_log_file():
     if not os.path.exists(LOG_FILE):
         with open(LOG_FILE, "w", newline="") as file:
             writer = csv.writer(file)
-            writer.writerow(["timestamp", "event_type", "file_path"])
+            writer.writerow(["timestamp", "event_type", "file_path", "dest_path"])
 
 # this function writes each file event into the csv file for later usage
-def write_to_log(event_type, file_path):
+# dest_path is only used for move/rename events, otherwise it stays empty           
+def write_to_log(event_type, file_path, dest_path = ""):
     with open(LOG_FILE, "a", newline = "") as file:
         writer = csv.writer(file)
-        writer.writerow([datetime.now(), event_type, file_path])
+        writer.writerow([datetime.now(), event_type, file_path, dest_path])
 
 
 # this class describes what to do when these file events happen (create, modify, delete, move)
@@ -64,8 +65,8 @@ class MyHandler(FileSystemEventHandler):
 
     # runs when a file is moved or renamed
     def on_moved(self, event):
-        print("File moved or renamed:", event.src_path)
-        write_to_log("moved_or_renamed", event.src_path)
+        print("File moved or renamed:", event.src_path, "->", event.dest_path)
+        write_to_log("moved_or_renamed", event.src_path, event.dest_path)
 
 
 # this block of code starts the monitoring
