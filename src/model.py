@@ -9,6 +9,7 @@
 
 
 import os
+import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -97,3 +98,14 @@ if __name__ == "__main__":
     print("=" * 50)
     print("Decision Tree:  ", round(acc * 100, 2), "%")
     print("Random Forest:  ", round(rf_acc * 100, 2), "%")
+
+    # save the decision tree
+    # and we save to a separate models/ folder which is gitignored (model files are big)
+    models_dir = os.path.join(root, "models")
+    if not os.path.exists(models_dir):
+        os.makedirs(models_dir)
+
+    model_path = os.path.join(models_dir, "ransomware_model.pkl")
+    joblib.dump(dt, model_path)
+    print()
+    print("Saved model to", model_path)
