@@ -18,7 +18,7 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 # go one level up from root
 project_root = os.path.dirname(current_dir)
 
-# path to the folder that we want to monitor
+# path to the folder that needs to be monitored
 WATCH_FOLDER = os.path.join(project_root, "test_environment")
 
 # path to the logs folder
@@ -41,11 +41,15 @@ except FileNotFoundError:
     print("Monitor will run but no ML detection will happen")
 
 # keep up to 200 recent events, anything older then just falls off
-# using deque so we dont have to manually trim a list
+# using deque so there is no reason to manually trim a list
 recent_events = deque(maxlen=200)
 
 # how many seconds back the live sliding window looks (which matches training)
 LIVE_WINDOW_SECS = 5
+
+# track when an alert was last fired so there's no spam
+last_alert_time = None
+ALERT_COOLDOWN = 10
 
 # this function creates the csv file if it does not already exist
 def create_log_file():
@@ -112,6 +116,35 @@ def get_live_features():
         "unique_files": unique_files,
     }
 
+# this function checks the latest events against the trained model
+def check_for_ransomware():
+    # need global because of the reassign last_alert_time below
+    global last_alert_time
+
+    if model is None:
+        return
+
+    feats = get_live_features()
+    if feats is None:
+        return
+
+    X = pd.DataFrame([feats])
+    prediction = model.predict(X)[0]
+
+    if prediction == 1:
+        # check cooldown so alerts are not fired every event
+        now = datetime.now()
+        if last_alert_time is not None:
+            elapsed = (now - last_alert_time).total_seconds()
+            if elapsed < ALERT_COOLDOWN:
+                return  # still in cooldown, skip
+
+        # fire and remember when
+        print("=" * 60)
+        print("ALERT: ransomware-like behaviour detected!")
+        print("Window features:", feats)
+        print("=" * 60)
+        last_alert_time = now
 
 # this class describes what to do when these file events happen (create, modify, delete, move)
 class MyHandler(FileSystemEventHandler):
@@ -130,6 +163,7 @@ class MyHandler(FileSystemEventHandler):
             "file_path": event.src_path,
             "dest_path": "",
         })
+        check_for_ransomware()
 
     # runs when a file is modified
     def on_modified(self, event):
@@ -143,10 +177,7 @@ class MyHandler(FileSystemEventHandler):
             "file_path": event.src_path,
             "dest_path": "",
         })
-
-        # debug: print live features (will remove this in next commit - just using for testing)
-        feats = get_live_features()
-        print("  features:", feats)
+        check_for_ransomware()
 
     # runs when a file is deleted
     def on_deleted(self, event):
@@ -160,6 +191,7 @@ class MyHandler(FileSystemEventHandler):
             "file_path": event.src_path,
             "dest_path": "",
         })
+        check_for_ransomware()
 
     # runs when a file is moved or renamed
     # record both old (src) and new (dest) paths because ransomware
@@ -175,6 +207,7 @@ class MyHandler(FileSystemEventHandler):
             "file_path": event.src_path,
             "dest_path": event.dest_path,
         })
+        check_for_ransomware()
 
 
 # this block of code starts the monitoring
