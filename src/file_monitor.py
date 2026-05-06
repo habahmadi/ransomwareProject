@@ -68,6 +68,51 @@ def write_to_log(event_type, file_path, dest_path = ""):
         writer.writerow([datetime.now(), event_type, file_path, dest_path])
 
 
+# now build the same 7 features that the model was trained on recently
+# but using the live in-memory buffer instead of a saved csv
+def get_live_features():
+    # if buffer is empty there is nothing to score
+    if len(recent_events) == 0:
+        return None
+
+    # now work out the cutoff time for the sliding window
+    now = datetime.now()
+    cutoff = now - pd.Timedelta(seconds=LIVE_WINDOW_SECS)
+
+    # only keep events that happened within the window
+    window = [e for e in recent_events if e["timestamp"] >= cutoff]
+
+    if len(window) == 0:
+        return None
+
+    # now count up the same things feature_extractor does
+    total = len(window)
+    num_created = sum(1 for e in window if e["event_type"] == "created")
+    num_modified = sum(1 for e in window if e["event_type"] == "modified")
+    num_deleted = sum(1 for e in window if e["event_type"] == "deleted")
+    num_renamed = sum(1 for e in window if e["event_type"] == "moved_or_renamed")
+
+    # count files renamed to .locked extension
+    num_locked = sum(
+        1 for e in window
+        if e["dest_path"].lower().endswith(".locked")
+    )
+
+    # check the number of distinct files in the window
+    unique_files = len(set(e["file_path"] for e in window))
+
+    # return as a dict using the SAME column names as training and it has to be in order
+    return {
+        "total_events": total,
+        "num_created": num_created,
+        "num_modified": num_modified,
+        "num_deleted": num_deleted,
+        "num_renamed": num_renamed,
+        "num_locked_ext": num_locked,
+        "unique_files": unique_files,
+    }
+
+
 # this class describes what to do when these file events happen (create, modify, delete, move)
 class MyHandler(FileSystemEventHandler):
 
@@ -98,6 +143,10 @@ class MyHandler(FileSystemEventHandler):
             "file_path": event.src_path,
             "dest_path": "",
         })
+
+        # debug: print live features (will remove this in next commit - just using for testing)
+        feats = get_live_features()
+        print("  features:", feats)
 
     # runs when a file is deleted
     def on_deleted(self, event):
