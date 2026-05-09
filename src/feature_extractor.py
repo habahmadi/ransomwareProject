@@ -3,6 +3,12 @@
 
 import os
 import pandas as pd
+import sys
+
+# import honeyfile names so it can be detected when there is activity or when they are touched
+# this is needed when feature_extractor is imported from outside src/
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from honeyfiles import HONEY_NAMES
 
 # find the log file
 cur = os.path.dirname(os.path.abspath(__file__))
@@ -50,6 +56,14 @@ def extract_features(window):
     # how many unique files were handled in this window
     unique_files = window["file_path"].nunique()
 
+    # check if any honeyfile got touched in this window
+    paths = window["file_path"].fillna("").astype(str)
+    honey_touched = 0
+    for h in HONEY_NAMES:
+        if paths.str.contains(h, regex=False).any():
+            honey_touched = 1
+            break
+
     return {
         "total_events": total,
         "num_created": num_created,
@@ -58,6 +72,7 @@ def extract_features(window):
         "num_renamed": num_renamed,
         "num_locked_ext": num_locked,
         "unique_files": unique_files,
+        "honey_touched": honey_touched,
     }
 
 
