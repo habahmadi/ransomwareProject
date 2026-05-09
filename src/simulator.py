@@ -3,6 +3,7 @@
 import os       # used for file paths
 import time     # used to slow down actions
 import random   
+from honeyfiles import create_honeyfiles
 
 
 # getting the path to the test_environment folder
@@ -126,8 +127,8 @@ def ransomware_attack():
 
         old_path = os.path.join(TEST_FOLDER, file_name)
 
-        # only target the victim files that were created earlier
-        if os.path.isfile(old_path) and file_name.startswith("victim_file"):
+        # target victim files AND honeyfiles
+        if os.path.isfile(old_path) and (file_name.startswith("victim_file") or file_name.startswith("_AAA_")):
 
             # first read the file (simulating ransomware scanning files)
             with open(old_path, "r") as file:
@@ -166,6 +167,8 @@ def choose_simulation():
 
         # clean up between rounds so each one starts fresh
         clean_test_environment()
+        # recreate honeyfiles in case they got encrypted last round
+        create_honeyfiles()
 
         if choice == "1":
             normal_behaviour()
