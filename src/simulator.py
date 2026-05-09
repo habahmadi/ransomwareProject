@@ -21,14 +21,15 @@ def create_test_folder():
 
 
 # this function removes old files so its used as a cleanup function
+# except honeyfiles
 def clean_test_environment():
     for file_name in os.listdir(TEST_FOLDER):
         file_path = os.path.join(TEST_FOLDER, file_name)
 
-        if os.path.isfile(file_path):
+        if os.path.isfile(file_path) and not file_name.startswith("_AAA_"):
             os.remove(file_path)
 
-    print("Test environment cleaned.")
+    print("Test environment cleaned (honeyfiles preserved).")
 
 # this function creates a normal test file
 def create_file():
