@@ -21,15 +21,15 @@ def create_test_folder():
         os.makedirs(TEST_FOLDER)
 
 
-# this function removes old files so its used as a cleanup function
-# except honeyfiles
 def clean_test_environment():
+    # remove old files but keep the original honeyfiles
     for file_name in os.listdir(TEST_FOLDER):
         file_path = os.path.join(TEST_FOLDER, file_name)
-
-        if os.path.isfile(file_path) and not file_name.startswith("_AAA_"):
-            os.remove(file_path)
-
+        if os.path.isfile(file_path):
+            # keep only the original honeyfiles
+            is_original_honeyfile = (file_name.startswith("_AAA_") and not file_name.endswith(".locked"))
+            if not is_original_honeyfile:
+                os.remove(file_path)
     print("Test environment cleaned (honeyfiles preserved).")
 
 # this function creates a normal test file
@@ -128,7 +128,10 @@ def ransomware_attack():
         old_path = os.path.join(TEST_FOLDER, file_name)
 
         # target victim files AND honeyfiles
-        if os.path.isfile(old_path) and (file_name.startswith("victim_file") or file_name.startswith("_AAA_")):
+        # but skip already-locked files so it doesnt re-lock them in a loop
+        if (os.path.isfile(old_path) 
+            and (file_name.startswith("victim_file") or file_name.startswith("_AAA_"))
+            and not file_name.endswith(".locked")):
 
             # first read the file (simulating ransomware scanning files)
             with open(old_path, "r") as file:
@@ -167,12 +170,12 @@ def choose_simulation():
 
         # clean up between rounds so each one starts fresh
         clean_test_environment()
-        # recreate honeyfiles in case they got encrypted last round
-        create_honeyfiles()
 
         if choice == "1":
             normal_behaviour()
         elif choice == "2":
+            # only recreate honeyfiles for ransomware runs since they get encrypted
+            create_honeyfiles()
             create_multiple_files()
             time.sleep(2)
             ransomware_attack()
