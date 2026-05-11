@@ -30,6 +30,9 @@ LOG_FOLDER = os.path.join(project_root, "logs")
 # path to the csv file where events will be saved
 LOG_FILE = os.path.join(LOG_FOLDER, "file_events.csv")
 
+# path to the csv file where alerts will be saved
+ALERTS_FILE = os.path.join(LOG_FOLDER, "alerts.csv")
+
 # path to the trained ML model
 MODEL_PATH = os.path.join(project_root, "models", "ransomware_model.pkl")
 
@@ -54,18 +57,29 @@ LIVE_WINDOW_SECS = 5
 last_alert_time = None
 ALERT_COOLDOWN = 10
 
-# this function creates the csv file if it does not already exist
+# this function creates the csv files if they do not already exist
 def create_log_file():
 
     # checking to make sure logs folder exists
     if not os.path.exists(LOG_FOLDER):
         os.makedirs(LOG_FOLDER)
 
-    # if csv file does not exist, create it and add headings
+    # if events csv file does not exist, create it and add headings
     if not os.path.exists(LOG_FILE):
         with open(LOG_FILE, "w", newline="") as file:
             writer = csv.writer(file)
             writer.writerow(["timestamp", "event_type", "file_path", "dest_path"])
+
+    # do the same for alerts csv
+    # save each alert with the window features so the flask dashboard can show them
+    if not os.path.exists(ALERTS_FILE):
+        with open(ALERTS_FILE, "w", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([
+                "timestamp", "total_events", "num_created", "num_modified",
+                "num_deleted", "num_renamed", "num_locked_ext",
+                "unique_files", "honey_touched",
+            ])
 
 # this function writes each file event into the csv file for later usage
 # dest_path is only used for move/rename events, otherwise it stays empty           
@@ -73,6 +87,24 @@ def write_to_log(event_type, file_path, dest_path = ""):
     with open(LOG_FILE, "a", newline = "") as file:
         writer = csv.writer(file)
         writer.writerow([datetime.now(), event_type, file_path, dest_path])
+
+
+# this writes an alert into the alerts csv
+# so the dashboard can show a history of past alerts
+def write_alert(feats):
+    with open(ALERTS_FILE, "a", newline="") as file:
+        writer = csv.writer(file)
+        writer.writerow([
+            datetime.now(),
+            feats["total_events"],
+            feats["num_created"],
+            feats["num_modified"],
+            feats["num_deleted"],
+            feats["num_renamed"],
+            feats["num_locked_ext"],
+            feats["unique_files"],
+            feats["honey_touched"],
+        ])
 
 
 # now build the same 8 features that the model was trained on recently
@@ -158,8 +190,9 @@ def check_for_ransomware():
         print("ALERT: ransomware-like behaviour detected!")
         print("Window features:", feats)
         print("=" * 60)
+        write_alert(feats)
         last_alert_time = now
-
+        
 # this class describes what to do when these file events happen (create, modify, delete, move)
 class MyHandler(FileSystemEventHandler):
 
