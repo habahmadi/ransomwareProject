@@ -30,6 +30,7 @@ FEATURE_COLS = [
     "num_renamed",
     "num_locked_ext",
     "unique_files",
+    "honey_touched",
 ]
 
 
