@@ -3,5 +3,12 @@
 
 {% block content %}
 <h1 class="text-3xl font-bold mb-6">Dashboard</h1>
-<p class="text-slate-400">Real-time view of file activity will go here.</p>
+
+<!-- these are raw stats for now, I'll style them properly in the next commit -->
+<div class="bg-slate-800 rounded-lg p-6 space-y-2">
+    <p>Total events captured: {{ stats.total_events }}</p>
+    <p>Total alerts fired: {{ stats.total_alerts }}</p>
+    <p>Unique files seen: {{ stats.unique_files }}</p>
+    <p>Model accuracy: {{ stats.model_accuracy }}%</p>
+</div>
 {% endblock %}

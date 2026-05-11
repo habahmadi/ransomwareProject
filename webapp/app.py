@@ -9,6 +9,7 @@
 #   https://flask.palletsprojects.com/en/stable/patterns/jquery/    (returning JSON for charts)
 
 import os
+import pandas as pd
 from flask import Flask, render_template
 
 # first find the project root
@@ -22,11 +23,41 @@ ALERTS_FILE = os.path.join(project_root, "logs", "alerts.csv")
 # create the flask app
 app = Flask(__name__)
 
+def get_summary_stats():
+    # builds a dict of high-level numbers for the dashboard top section
+    # then wrap them in try/except so the page doesnt crash if a csv is missing
+
+    # default values in case nothing exists yet
+    stats = {
+        "total_events": 0,
+        "total_alerts": 0,
+        "unique_files": 0,
+        "model_accuracy": 98.61,  # this is from the model.py training output
+    }
+
+    # read events csv
+    try:
+        events_df = pd.read_csv(EVENTS_FILE)
+        stats["total_events"] = len(events_df)
+        stats["unique_files"] = events_df["file_path"].nunique()
+    except FileNotFoundError:
+        pass
+
+    # read alerts csv
+    try:
+        alerts_df = pd.read_csv(ALERTS_FILE)
+        stats["total_alerts"] = len(alerts_df)
+    except FileNotFoundError:
+        pass
+
+    return stats
+
 
 # homepage / main dashboard
 @app.route("/")
 def dashboard():
-    return render_template("dashboard.html")
+    stats = get_summary_stats()
+    return render_template("dashboard.html", stats=stats)
 
 
 # alerts page - shows all ML-flagged events
