@@ -4,7 +4,10 @@ import os                       # used for file paths
 import time                     # used to keep monitor running
 import csv                      # used to write file events into csv
 import joblib
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
+from honeyfiles import HONEY_NAMES
 from collections import deque
 from datetime import datetime   # used to get date and time of each event for logs
 
@@ -72,7 +75,7 @@ def write_to_log(event_type, file_path, dest_path = ""):
         writer.writerow([datetime.now(), event_type, file_path, dest_path])
 
 
-# now build the same 7 features that the model was trained on recently
+# now build the same 8 features that the model was trained on recently
 # but using the live in-memory buffer instead of a saved csv
 def get_live_features():
     # if buffer is empty there is nothing to score
@@ -105,6 +108,16 @@ def get_live_features():
     # check the number of distinct files in the window
     unique_files = len(set(e["file_path"] for e in window))
 
+    # check if any honeyfile got touched in this window
+    honey_touched = 0
+    for e in window:
+        for h in HONEY_NAMES:
+            if h in e["file_path"]:
+                honey_touched = 1
+                break
+        if honey_touched == 1:
+            break
+
     # return as a dict using the SAME column names as training and it has to be in order
     return {
         "total_events": total,
@@ -114,6 +127,7 @@ def get_live_features():
         "num_renamed": num_renamed,
         "num_locked_ext": num_locked,
         "unique_files": unique_files,
+        "honey_touched": honey_touched,
     }
 
 # this function checks the latest events against the trained model
