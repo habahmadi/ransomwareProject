@@ -53,11 +53,39 @@ def get_summary_stats():
     return stats
 
 
+def get_events_over_time():
+    # groups events by minute so it can plot them as a line chart
+    # returns two lists: labels (time strings) and values (event counts)
+
+    labels = []
+    values = []
+
+    try:
+        df = pd.read_csv(EVENTS_FILE)
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
+
+        # group by minute and count how many events landed in each bucket
+        grouped = df.set_index("timestamp").resample("1min").size()
+
+        # convert to lists for the chart
+        labels = [t.strftime("%H:%M") for t in grouped.index]
+        values = grouped.tolist()
+    except FileNotFoundError:
+        pass
+
+    return labels, values
+
 # homepage / main dashboard
 @app.route("/")
 def dashboard():
     stats = get_summary_stats()
-    return render_template("dashboard.html", stats=stats)
+    chart_labels, chart_values = get_events_over_time()
+    return render_template(
+        "dashboard.html",
+        stats=stats,
+        chart_labels=chart_labels,
+        chart_values=chart_values,
+    )
 
 
 # alerts page - shows all ML-flagged events

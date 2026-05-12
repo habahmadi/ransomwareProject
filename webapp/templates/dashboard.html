@@ -57,6 +57,65 @@
 
 </div>
 
+<!-- events over time chart -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold">Events Over Time</h2>
+        <span class="text-xs text-slate-400">grouped by minute</span>
+    </div>
+    <!-- canvas is where chart.js will draw -->
+    <div class="h-72">
+        <canvas id="eventsOverTimeChart"></canvas>
+    </div>
+</div>
+
+<!-- chart data passed from flask -->
+<!-- tojson converts the python list into a valid JS array -->
+<script>
+    const eventsLabels = {{ chart_labels|tojson }};
+    const eventsValues = {{ chart_values|tojson }};
+
+    const ctx = document.getElementById("eventsOverTimeChart").getContext("2d");
+    new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: eventsLabels,
+            datasets: [{
+                label: "Events per minute",
+                data: eventsValues,
+                borderColor: "rgb(59, 130, 246)",          
+                backgroundColor: "rgba(59, 130, 246, 0.1)", 
+                fill: true,
+                tension: 0.3,        // makes the line slightly curved
+                pointRadius: 3,
+                pointBackgroundColor: "rgb(59, 130, 246)",
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: "rgb(203, 213, 225)" } }   // slate-300 for legend text
+            },
+            scales: {
+                x: {
+                    ticks: { color: "rgb(148, 163, 184)" },           // slate-400 for axis labels
+                    grid: { color: "rgba(71, 85, 105, 0.3)" }          // faint slate-600 gridlines
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: "rgb(148, 163, 184)" },
+                    grid: { color: "rgba(71, 85, 105, 0.3)" }
+                }
+            },
+            animation: {
+                duration: 1500,    // 1.5s animation when the chart first loads
+                easing: "easeOutQuart"
+            }
+        }
+    });
+</script>
+
 <!-- counter animation script -->
 <!-- finds every .counter element and animates the number from 0 to its target -->
 <script>
