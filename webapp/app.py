@@ -10,6 +10,7 @@
 
 import os
 import pandas as pd
+import time
 from flask import Flask, render_template
 
 # first find the project root
@@ -22,6 +23,11 @@ ALERTS_FILE = os.path.join(project_root, "logs", "alerts.csv")
 
 # create the flask app
 app = Flask(__name__)
+
+# context processor runs before every template
+@app.context_processor
+def inject_monitor_status():
+    return {"monitor_status": get_monitor_status()}
 
 def get_summary_stats():
     # builds a dict of high-level numbers for the dashboard top section
@@ -133,6 +139,22 @@ def get_recent_events(limit=20):
         pass
 
     return rows
+
+
+def get_monitor_status():
+    # works out if the monitor is currently running by checking when
+    # the events csv was last modified
+    # if it changed in the last 30 seconds the monitor is assumed to be alive
+
+    try:
+        last_modified = os.path.getmtime(EVENTS_FILE)
+        seconds_since = time.time() - last_modified
+        if seconds_since < 30:
+            return "active"
+    except FileNotFoundError:
+        pass
+
+    return "offline"
 
 def get_alerts():
     # returns all rows from alerts.csv as a list of dicts
