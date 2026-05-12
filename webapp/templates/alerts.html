@@ -2,6 +2,92 @@
 {% block title %}Alerts - Ransomware Detector{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">Alerts</h1>
-<p class="text-slate-400">All ransomware alerts will be listed here.</p>
+
+<!-- page header -->
+<div class="mb-8 flex items-center justify-between">
+    <div>
+        <h1 class="text-3xl font-bold">Alerts</h1>
+        <p class="text-slate-400 text-sm mt-1">Ransomware patterns flagged by the ML model</p>
+    </div>
+    <div class="text-sm">
+        <span class="px-3 py-1 bg-red-900/40 text-red-300 rounded-full">
+            {{ alerts|length }} total
+        </span>
+    </div>
+</div>
+
+{% if alerts %}
+<!-- main alerts table -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider">
+                <tr>
+                    <th class="text-left px-4 py-3">Severity</th>
+                    <th class="text-left px-4 py-3">Time</th>
+                    <th class="text-right px-4 py-3">Events</th>
+                    <th class="text-right px-4 py-3">Renamed</th>
+                    <th class="text-right px-4 py-3">.locked</th>
+                    <th class="text-right px-4 py-3">Unique files</th>
+                    <th class="text-center px-4 py-3">Honeyfile</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in alerts %}
+                <tr class="border-t border-slate-700 hover:bg-slate-700/30 transition">
+
+                    <!-- severity based on honeyfile or locked extension -->
+                    <!-- honeyfile touched = critical, locked extension = high, otherwise medium -->
+                    <td class="px-4 py-3">
+                        {% if a.honey_touched == 1 %}
+                            <span class="px-2 py-1 rounded text-xs bg-red-900/60 text-red-200 font-semibold">CRITICAL</span>
+                        {% elif a.num_locked_ext > 0 %}
+                            <span class="px-2 py-1 rounded text-xs bg-orange-900/60 text-orange-200 font-semibold">HIGH</span>
+                        {% else %}
+                            <span class="px-2 py-1 rounded text-xs bg-yellow-900/60 text-yellow-200 font-semibold">MEDIUM</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="px-4 py-3 text-slate-300 whitespace-nowrap">
+                        {{ a.timestamp[:19] }}
+                    </td>
+
+                    <td class="px-4 py-3 text-right font-mono">{{ a.total_events }}</td>
+                    <td class="px-4 py-3 text-right font-mono">{{ a.num_renamed }}</td>
+                    <td class="px-4 py-3 text-right font-mono">{{ a.num_locked_ext }}</td>
+                    <td class="px-4 py-3 text-right font-mono">{{ a.unique_files }}</td>
+
+                    <td class="px-4 py-3 text-center">
+                        {% if a.honey_touched == 1 %}
+                            <span class="text-red-400 text-lg">●</span>
+                        {% else %}
+                            <span class="text-slate-600 text-lg">○</span>
+                        {% endif %}
+                    </td>
+
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mt-6 bg-slate-800/50 border border-slate-700 rounded-lg p-4 text-xs text-slate-400">
+    <p class="font-semibold text-slate-300 mb-2">Severity guide</p>
+    <ul class="space-y-1">
+        <li><span class="text-red-300 font-semibold">CRITICAL</span> — honeyfile touched (no legitimate process should ever do this)</li>
+        <li><span class="text-orange-300 font-semibold">HIGH</span> — files being renamed to .locked extension (classic encryption signature)</li>
+        <li><span class="text-yellow-300 font-semibold">MEDIUM</span> — unusual activity pattern flagged by the model</li>
+    </ul>
+</div>
+
+{% else %}
+<!-- empty state when no alerts have been recorded -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-12 text-center">
+    <div class="text-6xl mb-4">🟢</div>
+    <p class="text-slate-300 text-lg mb-2">No alerts recorded</p>
+    <p class="text-slate-500 text-sm">The system has not flagged any ransomware-like activity yet.</p>
+</div>
+{% endif %}
+
 {% endblock %}

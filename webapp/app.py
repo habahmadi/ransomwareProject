@@ -134,6 +134,31 @@ def get_recent_events(limit=20):
 
     return rows
 
+def get_alerts():
+    # returns all rows from alerts.csv as a list of dicts
+    # newest alerts have to go first so they show up at the top of the page
+
+    rows = []
+    try:
+        df = pd.read_csv(ALERTS_FILE)
+        df = df.sort_values("timestamp", ascending=False)
+        for _, row in df.iterrows():
+            rows.append({
+                "timestamp": row["timestamp"],
+                "total_events": row["total_events"],
+                "num_created": row["num_created"],
+                "num_modified": row["num_modified"],
+                "num_deleted": row["num_deleted"],
+                "num_renamed": row["num_renamed"],
+                "num_locked_ext": row["num_locked_ext"],
+                "unique_files": row["unique_files"],
+                "honey_touched": row["honey_touched"],
+            })
+    except FileNotFoundError:
+        pass
+
+    return rows
+
 # homepage / main dashboard
 @app.route("/")
 def dashboard():
@@ -158,7 +183,8 @@ def dashboard():
 # alerts page - shows all ML-flagged events
 @app.route("/alerts")
 def alerts():
-    return render_template("alerts.html")
+    alerts_list = get_alerts()
+    return render_template("alerts.html", alerts=alerts_list)
 
 
 # about page - explains how the system works
