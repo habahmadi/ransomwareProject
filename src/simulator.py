@@ -3,6 +3,7 @@
 import os       # used for file paths
 import time     # used to slow down actions
 import random   
+import sys
 from honeyfiles import create_honeyfiles
 
 
@@ -156,14 +157,20 @@ def ransomware_attack():
 
 
 # this function asks the user which simulation they want to run (this menu is temporary for now, just used for testing purposes only)
+# can also be called from outside (e.g. flask) by passing args via sys.argv
 def choose_simulation():
 
-    print("Choose simulation type:")
-    print("1. Normal behaviour")
-    print("2. Ransomware behaviour")
-
-    choice = input("Enter 1 or 2: ")
-    rounds = int(input("How many times to run it? "))
+    # if command line args were passed use those, otherwise ask interactively
+    if len(sys.argv) >= 3:
+        choice = sys.argv[1]
+        rounds = int(sys.argv[2])
+        print("Running simulation from CLI args:", choice, "x", rounds)
+    else:
+        print("Choose simulation type:")
+        print("1. Normal behaviour")
+        print("2. Ransomware behaviour")
+        choice = input("Enter 1 or 2: ")
+        rounds = int(input("How many times to run it? "))
 
     for r in range(rounds):
         print("\n--- Round", r + 1, "---")
@@ -183,7 +190,6 @@ def choose_simulation():
             print("Invalid choice")
             return
 
-        # small pause between rounds
         time.sleep(1)
 
 # This if block will be changing many times for testing purposes.
