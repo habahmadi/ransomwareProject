@@ -84,6 +84,79 @@
 
 </div>
 
+<!-- bottom row: top files + recent events table side by side -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- top files panel -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Top Files by Activity</h2>
+            <span class="text-xs text-slate-400">most touched</span>
+        </div>
+
+        {% if top_names %}
+            <ul class="space-y-3">
+                {% for name in top_names %}
+                <li class="flex items-center justify-between text-sm">
+                    <span class="truncate text-slate-200">{{ name }}</span>
+                    <span class="ml-3 px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs font-mono">
+                        {{ top_counts[loop.index0] }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-slate-500 text-sm">No data yet. Run the file monitor to start capturing events.</p>
+        {% endif %}
+    </div>
+
+    <!-- recent events table -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Recent Events</h2>
+            <span class="text-xs text-slate-400">latest 20</span>
+        </div>
+
+        {% if recent_events %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="text-slate-400 text-xs uppercase tracking-wider border-b border-slate-700">
+                        <tr>
+                            <th class="text-left py-2 pr-2">Time</th>
+                            <th class="text-left py-2 pr-2">Type</th>
+                            <th class="text-left py-2">File</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in recent_events %}
+                        <tr class="border-b border-slate-700/50">
+                            <td class="py-2 pr-2 text-slate-400 whitespace-nowrap">{{ e.timestamp[11:19] }}</td>
+                            <td class="py-2 pr-2">
+                                {% if e.event_type == "created" %}
+                                    <span class="px-2 py-0.5 rounded text-xs bg-blue-900/40 text-blue-300">created</span>
+                                {% elif e.event_type == "modified" %}
+                                    <span class="px-2 py-0.5 rounded text-xs bg-yellow-900/40 text-yellow-300">modified</span>
+                                {% elif e.event_type == "deleted" %}
+                                    <span class="px-2 py-0.5 rounded text-xs bg-red-900/40 text-red-300">deleted</span>
+                                {% elif e.event_type == "moved_or_renamed" %}
+                                    <span class="px-2 py-0.5 rounded text-xs bg-purple-900/40 text-purple-300">renamed</span>
+                                {% else %}
+                                    <span>{{ e.event_type }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-2 truncate text-slate-300">{{ e.file_path }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="text-slate-500 text-sm">No events yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
 <!-- chart data passed from flask -->
 <script>
     const eventsLabels = {{ chart_labels|tojson }};

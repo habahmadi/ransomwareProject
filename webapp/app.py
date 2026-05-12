@@ -92,12 +92,56 @@ def get_event_type_breakdown():
 
     return labels, values
 
+
+def get_top_files(limit=10):
+    # finds the top N most-touched files
+    # returns lists of (basename, count)
+
+    names = []
+    counts = []
+
+    try:
+        df = pd.read_csv(EVENTS_FILE)
+        # group by file path, count rows, sort desc, take top N
+        top = df["file_path"].value_counts().head(limit)
+        # shorten paths to just the file name so they fit in the panel
+        names = [os.path.basename(p) for p in top.index]
+        counts = top.tolist()
+    except FileNotFoundError:
+        pass
+
+    return names, counts
+
+
+def get_recent_events(limit=20):
+    # returns the most recent N events as a list of dicts
+    # so the template can loop and render them in a table
+
+    rows = []
+    try:
+        df = pd.read_csv(EVENTS_FILE)
+        # sort newest first and take top N
+        df = df.sort_values("timestamp", ascending=False).head(limit)
+        # turn each row into a dict for a more easier template access
+        for _, row in df.iterrows():
+            rows.append({
+                "timestamp": row["timestamp"],
+                "event_type": row["event_type"],
+                "file_path": os.path.basename(str(row["file_path"])),
+            })
+    except FileNotFoundError:
+        pass
+
+    return rows
+
 # homepage / main dashboard
 @app.route("/")
 def dashboard():
     stats = get_summary_stats()
     chart_labels, chart_values = get_events_over_time()
     type_labels, type_values = get_event_type_breakdown()
+    top_names, top_counts = get_top_files()
+    recent_events = get_recent_events()
     return render_template(
         "dashboard.html",
         stats=stats,
@@ -105,6 +149,9 @@ def dashboard():
         chart_values=chart_values,
         type_labels=type_labels,
         type_values=type_values,
+        top_names=top_names,
+        top_counts=top_counts,
+        recent_events=recent_events,
     )
 
 
