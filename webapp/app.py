@@ -11,6 +11,7 @@
 import os
 import pandas as pd
 import time
+import subprocess
 from flask import Flask, render_template
 
 # first find the project root
@@ -20,6 +21,8 @@ project_root = os.path.dirname(cur)
 # paths to the csv files written by file_monitor.py
 EVENTS_FILE = os.path.join(project_root, "logs", "file_events.csv")
 ALERTS_FILE = os.path.join(project_root, "logs", "alerts.csv")
+# path to the simulator script
+SIMULATOR_SCRIPT = os.path.join(project_root, "src", "simulator.py")
 
 # create the flask app
 app = Flask(__name__)
@@ -213,6 +216,22 @@ def alerts():
 @app.route("/about")
 def about():
     return render_template("about.html")
+
+# these are routes that launch the simulator in the background
+# I use subprocess.Popen so flask doesnt block waiting for the simulation to finish
+
+@app.route("/run/normal", methods=["POST"])
+def run_normal():
+    # launch a single round of normal behaviour
+    subprocess.Popen(["python3", SIMULATOR_SCRIPT, "1", "1"])
+    return "ok", 200
+
+
+@app.route("/run/ransomware", methods=["POST"])
+def run_ransomware():
+    # launch a single round of ransomware behaviour
+    subprocess.Popen(["python3", SIMULATOR_SCRIPT, "2", "1"])
+    return "ok", 200
 
 
 if __name__ == "__main__":

@@ -3,10 +3,32 @@
 
 {% block content %}
 
-<!-- page header -->
-<div class="mb-8">
-    <h1 class="text-3xl font-bold">Dashboard</h1>
-    <p class="text-slate-400 text-sm mt-1">Live overview of file activity and ransomware detection</p>
+<!-- page header with simulation control buttons -->
+<div class="mb-8 flex items-start justify-between flex-wrap gap-4">
+    <div>
+        <h1 class="text-3xl font-bold">Dashboard</h1>
+        <p class="text-slate-400 text-sm mt-1">Live overview of file activity and ransomware detection</p>
+    </div>
+
+    <!-- simulation buttons -->
+    <div class="flex gap-3">
+        <button id="runNormalBtn"
+                class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-100 rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <span>▶</span>
+            <span>Run Normal Activity</span>
+        </button>
+        <button id="runRansomBtn"
+                class="px-4 py-2 bg-red-700 hover:bg-red-600 text-white rounded-lg text-sm font-medium transition flex items-center gap-2">
+            <span>💀</span>
+            <span>Simulate Ransomware</span>
+        </button>
+    </div>
+</div>
+
+<!-- status banner that shows when a simulation is running -->
+<div id="simStatus" class="hidden mb-6 px-4 py-3 bg-blue-900/40 border border-blue-700 rounded-lg text-sm text-blue-200">
+    <span class="inline-block animate-pulse">●</span>
+    <span id="simStatusText" class="ml-2">Simulation running...</span>
 </div>
 
 <!-- stat cards grid -->
@@ -274,5 +296,35 @@
         }, stepTime);
     });
 </script>
+
+<!-- simulation button handlers -->
+     <script>
+        function runSimulation(endpoint, label) {
+            const status = document.getElementById("simStatus");
+            const statusText = document.getElementById("simStatusText");
+    
+            // show the running banner
+            statusText.textContent = label + " — wait a few seconds, then the page will refresh";
+            status.classList.remove("hidden");
+    
+            // fire the POST request to flask
+            fetch(endpoint, { method: "POST" })
+                .then(() => {
+                    // give the simulator time to finish and monitor to log everything
+                    setTimeout(() => window.location.reload(), 15000);
+                })
+                .catch(err => {
+                    statusText.textContent = "Error: " + err.message;
+                });
+        }
+    
+        document.getElementById("runNormalBtn").addEventListener("click", () => {
+            runSimulation("/run/normal", "Running normal activity simulation");
+        });
+    
+        document.getElementById("runRansomBtn").addEventListener("click", () => {
+            runSimulation("/run/ransomware", "Running ransomware simulation");
+        });
+    </script>
 
 {% endblock %}
