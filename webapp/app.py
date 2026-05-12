@@ -12,6 +12,7 @@ import os
 import pandas as pd
 import time
 import subprocess
+from flask import Flask, render_template, send_file
 from flask import Flask, render_template
 
 # first find the project root
@@ -233,6 +234,22 @@ def run_ransomware():
     subprocess.Popen(["python3", SIMULATOR_SCRIPT, "2", "1"])
     return "ok", 200
 
+# download routes - lets the user save the raw csv files
+
+@app.route("/download/events")
+def download_events():
+    try:
+        return send_file(EVENTS_FILE, as_attachment=True, download_name="file_events.csv")
+    except FileNotFoundError:
+        return "No events log found", 404
+
+
+@app.route("/download/alerts")
+def download_alerts():
+    try:
+        return send_file(ALERTS_FILE, as_attachment=True, download_name="alerts.csv")
+    except FileNotFoundError:
+        return "No alerts log found", 404
 
 if __name__ == "__main__":
     # debug=True means the server auto-reloads when code changes
