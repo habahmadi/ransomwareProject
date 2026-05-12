@@ -75,16 +75,36 @@ def get_events_over_time():
 
     return labels, values
 
+def get_event_type_breakdown():
+    # counts how many of each event type we have
+    # returns labels and values lists for the donut chart
+
+    labels = []
+    values = []
+
+    try:
+        df = pd.read_csv(EVENTS_FILE)
+        counts = df["event_type"].value_counts()
+        labels = counts.index.tolist()
+        values = counts.tolist()
+    except FileNotFoundError:
+        pass
+
+    return labels, values
+
 # homepage / main dashboard
 @app.route("/")
 def dashboard():
     stats = get_summary_stats()
     chart_labels, chart_values = get_events_over_time()
+    type_labels, type_values = get_event_type_breakdown()
     return render_template(
         "dashboard.html",
         stats=stats,
         chart_labels=chart_labels,
         chart_values=chart_values,
+        type_labels=type_labels,
+        type_values=type_values,
     )
 
 

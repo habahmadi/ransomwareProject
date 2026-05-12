@@ -57,20 +57,34 @@
 
 </div>
 
-<!-- events over time chart -->
-<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-8">
-    <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold">Events Over Time</h2>
-        <span class="text-xs text-slate-400">grouped by minute</span>
+<!-- charts row: line chart + donut side by side on wide screens -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+    <!-- events over time chart (takes 2 of 3 columns on wide screens) -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 lg:col-span-2">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Events Over Time</h2>
+            <span class="text-xs text-slate-400">grouped by minute</span>
+        </div>
+        <div class="h-72">
+            <canvas id="eventsOverTimeChart"></canvas>
+        </div>
     </div>
-    <!-- canvas is where chart.js will draw -->
-    <div class="h-72">
-        <canvas id="eventsOverTimeChart"></canvas>
+
+    <!-- event types donut chart -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold">Event Types</h2>
+            <span class="text-xs text-slate-400">all time</span>
+        </div>
+        <div class="h-72">
+            <canvas id="eventTypesChart"></canvas>
+        </div>
     </div>
+
 </div>
 
 <!-- chart data passed from flask -->
-<!-- tojson converts the python list into a valid JS array -->
 <script>
     const eventsLabels = {{ chart_labels|tojson }};
     const eventsValues = {{ chart_values|tojson }};
@@ -110,6 +124,52 @@
             },
             animation: {
                 duration: 1500,    // 1.5s animation when the chart first loads
+                easing: "easeOutQuart"
+            }
+        }
+    });
+</script>
+
+<!-- event types donut chart -->
+<script>
+    const typeLabels = {{ type_labels|tojson }};
+    const typeValues = {{ type_values|tojson }};
+
+    // colour palette
+    const typeColors = [
+        "rgb(59, 130, 246)",   // blue (created)
+        "rgb(234, 179, 8)",    // yellow (modified)
+        "rgb(239, 68, 68)",    // red (deleted)
+        "rgb(168, 85, 247)",   // purple (moved_or_renamed)
+    ];
+
+    const typeCtx = document.getElementById("eventTypesChart").getContext("2d");
+    new Chart(typeCtx, {
+        type: "doughnut",
+        data: {
+            labels: typeLabels,
+            datasets: [{
+                data: typeValues,
+                backgroundColor: typeColors,
+                borderColor: "rgb(30, 41, 59)",   // slate-800 to blend with card
+                borderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        color: "rgb(203, 213, 225)",
+                        padding: 12,
+                        font: { size: 12 }
+                    }
+                }
+            },
+            animation: {
+                duration: 1500,
                 easing: "easeOutQuart"
             }
         }
