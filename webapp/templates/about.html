@@ -2,6 +2,112 @@
 {% block title %}About - Ransomware Detector{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">About</h1>
-<p class="text-slate-400">Project information goes here.</p>
+
+<!-- page header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold">About this system</h1>
+    <p class="text-slate-400 text-sm mt-1">How the ransomware detector works under the hood</p>
+</div>
+
+<!-- overview card -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-3">Overview</h2>
+    <p class="text-slate-300 text-sm leading-relaxed">
+        This is a behaviour-based ransomware detection system built as a final year project.
+        Rather than relying on signatures of known malware, which other prominent systems use, it watches
+        file system activity and uses machine learning to spot the patterns that ransomware tends to create
+        when encrypting files (rapid renames, .locked extensions, bursts of modifications, and
+        accesses to decoy "honeyfiles").
+    </p>
+</div>
+
+<!-- pipeline card showing the 4 main components -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-4">Detection pipeline</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="border border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">👁️</span>
+                <h3 class="font-semibold">1. File monitor</h3>
+            </div>
+            <p class="text-sm text-slate-400">
+                A watchdog observer continuously logs every file create, modify, delete and rename event in the watched folder.
+            </p>
+        </div>
+
+        <div class="border border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">📐</span>
+                <h3 class="font-semibold">2. Feature extraction</h3>
+            </div>
+            <p class="text-sm text-slate-400">
+                For each event, a 5-second sliding window is summarised into 8 features: event counts by type, unique files, rename rate, .locked rate, and honeyfile touches.
+            </p>
+        </div>
+
+        <div class="border border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🌳</span>
+                <h3 class="font-semibold">3. ML classifier</h3>
+            </div>
+            <p class="text-sm text-slate-400">
+                A Decision Tree (compared against Random Forest) is trained on labelled normal and ransomware events. The final model achieved 98.61% accuracy in a test run which is more realistic than an outright 100%
+            </p>
+        </div>
+
+        <div class="border border-slate-700 rounded-lg p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="text-xl">🚨</span>
+                <h3 class="font-semibold">4. Alerting</h3>
+            </div>
+            <p class="text-sm text-slate-400">
+                The model scores every new event in real time. When ransomware-like behaviour is detected, an alert is logged with a cooldown to prevent spam and to avoid being locked out.
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<!-- honeyfiles card -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-3">🍯 Honeyfiles</h2>
+    <p class="text-slate-300 text-sm leading-relaxed mb-3">
+        Honeyfiles are decoy files placed in the watched folder. Their names are produced to look valuable
+        to ransomware (e.g. <code class="bg-slate-700 px-1.5 py-0.5 rounded text-xs">_AAA_passwords.txt</code>)
+        but a real user has no reason to touch them, which is why they are used as bait.
+    </p>
+    <p class="text-slate-300 text-sm leading-relaxed">
+        Because no legitimate process or person should ever read or modify these files, any access at all is a strong signal of
+        malicious behaviour. The system uses honeyfile activity as one of its eight ML features,
+        and any alert that involves a honeyfile is automatically classified as <span class="text-red-300 font-semibold">CRITICAL</span>.
+    </p>
+</div>
+
+<!-- tech stack card -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-3">Tech stack</h2>
+    <ul class="text-sm text-slate-300 space-y-2">
+        <li><span class="text-slate-400">Language:</span> Python 3.12</li>
+        <li><span class="text-slate-400">File system events:</span> watchdog</li>
+        <li><span class="text-slate-400">Data processing:</span> pandas</li>
+        <li><span class="text-slate-400">Machine learning:</span> scikit-learn (Decision Tree, Random Forest)</li>
+        <li><span class="text-slate-400">Web dashboard:</span> Flask + Jinja2</li>
+        <li><span class="text-slate-400">UI / charts:</span> Tailwind CSS, Chart.js</li>
+    </ul>
+</div>
+
+<!-- limitations and future work card -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6">
+    <h2 class="text-xl font-semibold mb-3">Limitations & future work</h2>
+    <ul class="text-sm text-slate-300 space-y-2 list-disc list-inside">
+        <li>The system watches a single folder. Real EDR tools watch the entire file system at the OS level.</li>
+        <li>Training data is synthetic and generated by a simulator. A production model would need real-world telemetry.</li>
+        <li>No authentication on the dashboard. A real application would use hashed passwords, sessions, and role-based access for SOC analysts.</li>
+        <li>The monitor runs as a foreground process (no buttons to start the scan). In production it would be packaged as a system service (launchd / systemd) that starts on boot.</li>
+        <li>Alerts only print and log and no automated response. Future versions could back up touched files.</li>
+    </ul>
+</div>
+
 {% endblock %}
