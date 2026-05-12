@@ -86,6 +86,42 @@
     </ul>
 </div>
 
+<!-- advice panel - what users should do if a real attack is happening -->
+<div class="mt-6 bg-slate-800 border border-amber-700/50 rounded-lg p-6">
+    <div class="flex items-center gap-2 mb-4">
+        <span class="text-2xl">⚠️</span>
+        <h2 class="text-xl font-semibold text-amber-200">If you suspect a real attack</h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+
+        <div class="space-y-3">
+            <p class="font-semibold text-slate-200">Immediate steps</p>
+            <ul class="space-y-2 text-slate-400">
+                <li class="flex gap-2"><span class="text-amber-400">1.</span> Disconnect the affected machine from the network to stop the spread.</li>
+                <li class="flex gap-2"><span class="text-amber-400">2.</span> Do not pay the ransom! There is no guarantee files will be recovered.</li>
+                <li class="flex gap-2"><span class="text-amber-400">3.</span> Take screenshots of any ransom note for evidence.</li>
+                <li class="flex gap-2"><span class="text-amber-400">4.</span> Check the backups folder as recent file snapshots may have been preserved.</li>
+            </ul>
+        </div>
+
+        <div class="space-y-3">
+            <p class="font-semibold text-slate-200">Follow up</p>
+            <ul class="space-y-2 text-slate-400">
+                <li class="flex gap-2"><span class="text-amber-400">5.</span> Report the incident to Action Fraud or your local cybercrime authority.</li>
+                <li class="flex gap-2"><span class="text-amber-400">6.</span> Restore files from a known-clean backup rather than relying on a decryptor.</li>
+                <li class="flex gap-2"><span class="text-amber-400">7.</span> Apply security updates before reconnecting the machine.</li>
+                <li class="flex gap-2"><span class="text-amber-400">8.</span> Review what was accessed and notify anyone whose data may be affected.</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <p class="text-xs text-slate-500 mt-4 pt-4 border-t border-slate-700">
+        This advice is generic and not a substitute for professional incident response. For serious attacks, contact a qualified security professional.
+    </p>
+</div>
+
 {% else %}
 <!-- empty state when no alerts have been recorded -->
 <div class="bg-slate-800 border border-slate-700 rounded-lg p-12 text-center">
