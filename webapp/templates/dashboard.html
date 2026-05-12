@@ -2,13 +2,85 @@
 {% block title %}Dashboard - Ransomware Detector{% endblock %}
 
 {% block content %}
-<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
 
-<!-- these are raw stats for now, I'll style them properly in the next commit -->
-<div class="bg-slate-800 rounded-lg p-6 space-y-2">
-    <p>Total events captured: {{ stats.total_events }}</p>
-    <p>Total alerts fired: {{ stats.total_alerts }}</p>
-    <p>Unique files seen: {{ stats.unique_files }}</p>
-    <p>Model accuracy: {{ stats.model_accuracy }}%</p>
+<!-- page header -->
+<div class="mb-8">
+    <h1 class="text-3xl font-bold">Dashboard</h1>
+    <p class="text-slate-400 text-sm mt-1">Live overview of file activity and ransomware detection</p>
 </div>
+
+<!-- stat cards grid -->
+<!-- the data-target attribute is what the counter animation reads -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+    <!-- total events card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-blue-500 transition">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm font-medium uppercase tracking-wider">Events</span>
+            <span class="text-2xl">📊</span>
+        </div>
+        <div class="text-4xl font-bold counter" data-target="{{ stats.total_events }}">0</div>
+        <p class="text-slate-500 text-xs mt-2">file system events captured</p>
+    </div>
+
+    <!-- total alerts card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-red-500 transition">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm font-medium uppercase tracking-wider">Alerts</span>
+            <span class="text-2xl">🚨</span>
+        </div>
+        <div class="text-4xl font-bold text-red-400 counter" data-target="{{ stats.total_alerts }}">0</div>
+        <p class="text-slate-500 text-xs mt-2">ransomware patterns detected</p>
+    </div>
+
+    <!-- unique files card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-green-500 transition">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm font-medium uppercase tracking-wider">Files</span>
+            <span class="text-2xl">📁</span>
+        </div>
+        <div class="text-4xl font-bold counter" data-target="{{ stats.unique_files }}">0</div>
+        <p class="text-slate-500 text-xs mt-2">unique files monitored</p>
+    </div>
+
+    <!-- model accuracy card -->
+    <div class="bg-slate-800 border border-slate-700 rounded-lg p-6 hover:border-yellow-500 transition">
+        <div class="flex items-center justify-between mb-3">
+            <span class="text-slate-400 text-sm font-medium uppercase tracking-wider">Accuracy</span>
+            <span class="text-2xl">🎯</span>
+        </div>
+        <div class="text-4xl font-bold">
+            <span class="counter" data-target="{{ stats.model_accuracy }}">0</span>%
+        </div>
+        <p class="text-slate-500 text-xs mt-2">decision tree model accuracy</p>
+    </div>
+
+</div>
+
+<!-- counter animation script -->
+<!-- finds every .counter element and animates the number from 0 to its target -->
+<script>
+    document.querySelectorAll(".counter").forEach(el => {
+        const target = parseFloat(el.dataset.target);
+        const duration = 1200;   
+        const steps = 40;        
+        const stepTime = duration / steps;
+        let current = 0;
+        const increment = target / steps;
+
+        // pick how many decimal places to show
+        // if the target is a whole number show no decimals, otherwise show 2
+        const decimals = target % 1 === 0 ? 0 : 2;
+
+        const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
+            }
+            el.textContent = current.toFixed(decimals);
+        }, stepTime);
+    });
+</script>
+
 {% endblock %}
