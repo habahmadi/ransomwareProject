@@ -1,2 +1,0 @@
-This is a normal test file.
-This file was edited normally.

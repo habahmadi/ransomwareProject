@@ -7,6 +7,7 @@ import joblib
 import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pandas as pd
+from remediation import create_backup
 from honeyfiles import HONEY_NAMES
 from collections import deque
 from datetime import datetime   # used to get date and time of each event for logs
@@ -191,6 +192,8 @@ def check_for_ransomware():
         print("Window features:", feats)
         print("=" * 60)
         write_alert(feats)
+        # create a snapshot of the watched folder for recovery
+        create_backup()
         last_alert_time = now
         
 # this class describes what to do when these file events happen (create, modify, delete, move)
