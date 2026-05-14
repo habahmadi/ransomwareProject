@@ -1,11 +1,11 @@
 # this file trains a machine learning model to detect ransomware behaviour
-# we start with a decision tree because its simple and easy to explain
+# starting with a decision tree because its simple and easy to explain
 #
 # the decision tree usage and train/test split structure is based on:
 #   https://scikit-learn.org/stable/modules/tree.html
 #   https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 #   https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-# these resources have a great aount of information regarding this topic and is worth a read
+# these resources have a great aount of information regarding this topic
 
 
 import os
@@ -21,7 +21,7 @@ cur = os.path.dirname(os.path.abspath(__file__))
 root = os.path.dirname(cur)
 DATA_FILE = os.path.join(root, "logs", "training_data.csv")
 
-# the columns we use as features (input to the model)
+# the feature columns (input to the model)
 FEATURE_COLS = [
     "total_events",
     "num_created",
@@ -36,7 +36,6 @@ FEATURE_COLS = [
 
 def load_data():
     df = pd.read_csv(DATA_FILE)
-    # X is the input (features) and y is the target (label)
     X = df[FEATURE_COLS]
     y = df["label"]
     return X, y
@@ -52,7 +51,7 @@ if __name__ == "__main__":
     print()
 
     # split into train/test (80/20)
-    # stratify=y keeps the same balance of normal/ransomware in both train and test sets
+    # stratify=y keeps the same normal/ransomware balance in both sets
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
@@ -78,7 +77,7 @@ if __name__ == "__main__":
     print(classification_report(y_test, preds, target_names=["normal", "ransomware"]))
 
     # now train a random forest and compare
-    # random forest = many decision trees voting together which is usually more accurate
+    # random forest just runs many decision trees
     print("=" * 50)
     print("Training Random Forest...")
     rf = RandomForestClassifier(n_estimators=100, random_state=42)
@@ -101,7 +100,7 @@ if __name__ == "__main__":
     print("Random Forest:  ", round(rf_acc * 100, 2), "%")
 
     # save the decision tree
-    # and we save to a separate models/ folder which is gitignored (model files are big)
+    # save to models/ folder (its gitignored, model files are big)
     models_dir = os.path.join(root, "models")
     if not os.path.exists(models_dir):
         os.makedirs(models_dir)

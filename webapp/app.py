@@ -12,8 +12,8 @@ import os
 import pandas as pd
 import time
 import subprocess
+import sys
 from flask import Flask, render_template, send_file
-from flask import Flask, render_template
 
 # first find the project root
 cur = os.path.dirname(os.path.abspath(__file__))
@@ -25,6 +25,11 @@ ALERTS_FILE = os.path.join(project_root, "logs", "alerts.csv")
 # path to the simulator script
 SIMULATOR_SCRIPT = os.path.join(project_root, "src", "simulator.py")
 
+# path to the file monitor script
+MONITOR_SCRIPT = os.path.join(project_root, "src", "file_monitor.py")
+
+monitor_process = None
+
 # create the flask app
 app = Flask(__name__)
 
@@ -35,7 +40,6 @@ def inject_monitor_status():
 
 def get_summary_stats():
     # builds a dict of high-level numbers for the dashboard top section
-    # then wrap them in try/except so the page doesnt crash if a csv is missing
 
     # default values in case nothing exists yet
     stats = {
@@ -63,9 +67,40 @@ def get_summary_stats():
     return stats
 
 
+def get_honeyfile_status():
+    # checks each honeyfile and returns its status for the dashboard
+
+    # the three honeyfile names match what honeyfiles.py creates
+    HONEY_NAMES = [
+        "_AAA_passwords.txt",
+        "_AAA_backup_keys.txt",
+        "_AAA_financial_records.txt",
+    ]
+
+    watch_folder = os.path.join(project_root, "test_environment")
+    statuses = []
+
+    # list whats currently in the watched folder
+    try:
+        current_files = os.listdir(watch_folder)
+    except FileNotFoundError:
+        current_files = []
+
+    for name in HONEY_NAMES:
+        # .locked version means ransomware got to it
+        locked_present = any(f.startswith(name) and f.endswith(".locked") for f in current_files)
+        # check if the original file is still there
+        original_present = name in current_files
+
+        if locked_present or not original_present:
+            statuses.append({"name": name, "status": "compromised"})
+        else:
+            statuses.append({"name": name, "status": "intact"})
+
+    return statuses
+
 def get_events_over_time():
-    # groups events by minute so it can plot them as a line chart
-    # returns two lists: labels (time strings) and values (event counts)
+    # group events by minute for the line chart
 
     labels = []
     values = []
@@ -86,8 +121,7 @@ def get_events_over_time():
     return labels, values
 
 def get_event_type_breakdown():
-    # counts how many of each event type we have
-    # returns labels and values lists for the donut chart
+    # count event types for the donut chart
 
     labels = []
     values = []
@@ -124,8 +158,7 @@ def get_top_files(limit=10):
 
 
 def get_recent_events(limit=20):
-    # returns the most recent N events as a list of dicts
-    # so the template can loop and render them in a table
+    # most recent N events for the table
 
     rows = []
     try:
@@ -146,23 +179,12 @@ def get_recent_events(limit=20):
 
 
 def get_monitor_status():
-    # works out if the monitor is currently running by checking when
-    # the events csv was last modified
-    # if it changed in the last 30 seconds the monitor is assumed to be alive
-
-    try:
-        last_modified = os.path.getmtime(EVENTS_FILE)
-        seconds_since = time.time() - last_modified
-        if seconds_since < 30:
-            return "active"
-    except FileNotFoundError:
-        pass
-
+    if monitor_process is not None and monitor_process.poll() is None:
+        return "active"
     return "offline"
 
 def get_alerts():
-    # returns all rows from alerts.csv as a list of dicts
-    # newest alerts have to go first so they show up at the top of the page
+    # all alerts, newest first
 
     rows = []
     try:
@@ -193,6 +215,7 @@ def dashboard():
     type_labels, type_values = get_event_type_breakdown()
     top_names, top_counts = get_top_files()
     recent_events = get_recent_events()
+    honey_status = get_honeyfile_status()
     return render_template(
         "dashboard.html",
         stats=stats,
@@ -203,6 +226,7 @@ def dashboard():
         top_names=top_names,
         top_counts=top_counts,
         recent_events=recent_events,
+        honey_status=honey_status,
     )
 
 
@@ -224,15 +248,40 @@ def about():
 @app.route("/run/normal", methods=["POST"])
 def run_normal():
     # launch a single round of normal behaviour
-    subprocess.Popen(["python3", SIMULATOR_SCRIPT, "1", "1"])
+    subprocess.Popen([sys.executable, SIMULATOR_SCRIPT, "1", "1"])
     return "ok", 200
 
 
 @app.route("/run/ransomware", methods=["POST"])
 def run_ransomware():
     # launch a single round of ransomware behaviour
-    subprocess.Popen(["python3", SIMULATOR_SCRIPT, "2", "1"])
+    subprocess.Popen([sys.executable, SIMULATOR_SCRIPT, "2", "1"])
     return "ok", 200
+
+@app.route("/monitor/start", methods=["POST"])
+def start_monitor():
+    # spawn the file monitor as a background subprocess
+    global monitor_process
+
+    # if its already running dont start a second one
+    if monitor_process is not None and monitor_process.poll() is None:
+        return "already running", 200
+
+    monitor_process = subprocess.Popen([sys.executable, MONITOR_SCRIPT])
+    return "started", 200
+
+
+@app.route("/monitor/stop", methods=["POST"])
+def stop_monitor():
+    # kill the monitor subprocess if its running
+    global monitor_process
+
+    if monitor_process is not None and monitor_process.poll() is None:
+        monitor_process.terminate()
+        monitor_process = None
+        return "stopped", 200
+
+    return "not running", 200
 
 # download routes - lets the user save the raw csv files
 
@@ -252,6 +301,5 @@ def download_alerts():
         return "No alerts log found", 404
 
 if __name__ == "__main__":
-    # debug=True means the server auto-reloads when code changes
-    # which is great and useful during development
-    app.run(debug=True, port=5000)
+    # debug=True so the server reloads on code changes
+    app.run(debug=True, port=5000, use_reloader=False)

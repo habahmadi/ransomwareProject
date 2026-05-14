@@ -116,6 +116,49 @@
 
 </div>
 
+<!-- honeyfile status panel which shows whether the decoy files have been touched -->
+<div class="bg-slate-800 border border-slate-700 rounded-lg p-6 mb-8">
+    <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">🍯</span>
+            <h2 class="text-xl font-semibold">Honeyfile Status</h2>
+        </div>
+        <span class="text-xs text-slate-400">decoy files monitored for tampering</span>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for h in honey_status %}
+        <div class="border rounded-lg p-4
+                    {% if h.status == 'compromised' %}
+                        border-red-700/60 bg-red-900/20
+                    {% else %}
+                        border-green-700/40 bg-green-900/10
+                    {% endif %}">
+            <div class="flex items-center justify-between mb-2">
+                <span class="font-mono text-xs text-slate-300 truncate">{{ h.name }}</span>
+                {% if h.status == 'compromised' %}
+                    <span class="text-red-400 text-lg">●</span>
+                {% else %}
+                    <span class="text-green-400 text-lg">●</span>
+                {% endif %}
+            </div>
+            <p class="text-sm
+                      {% if h.status == 'compromised' %}
+                          text-red-300 font-semibold
+                      {% else %}
+                          text-green-300
+                      {% endif %}">
+                {% if h.status == 'compromised' %}
+                    COMPROMISED
+                {% else %}
+                    Intact
+                {% endif %}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
 <!-- bottom row: top files + recent events table side by side -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 

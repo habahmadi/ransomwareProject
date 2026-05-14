@@ -37,23 +37,42 @@
                 </svg>
                 <span class="text-xl font-bold">Ransomware Detector</span>
             </div>
+
             <div class="flex items-center gap-6 text-sm">
 
-                <!-- monitor status indicator -->
-                <!-- green pulsing dot when monitor is active, grey static dot when offline -->
-                <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-full border border-slate-700">
+                <!-- monitor status indicator + control button -->
+                <div class="flex items-center gap-2">
+
+                    <!-- status pill -->
+                    <!-- green pulsing dot when monitor is active, grey static dot when offline -->
+                    <div class="flex items-center gap-2 px-3 py-1 bg-slate-900 rounded-full border border-slate-700">
+                        {% if monitor_status == "active" %}
+                            <span class="relative flex h-2.5 w-2.5">
+                                <!-- the absolute span is the outer ring that "beats" out -->
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <!-- the second span is the solid dot in the middle -->
+                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                            </span>
+                            <span class="text-green-400 text-xs font-medium">Monitor: Active</span>
+                        {% else %}
+                            <span class="h-2.5 w-2.5 rounded-full bg-slate-500"></span>
+                            <span class="text-slate-400 text-xs font-medium">Monitor: Offline</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- control button - starts or stops the monitor subprocess -->
                     {% if monitor_status == "active" %}
-                        <span class="relative flex h-2.5 w-2.5">
-                            <!-- the absolute span is the outer ring that "beats" out -->
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                            <!-- the second span is the solid dot in the middle -->
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-                        </span>
-                        <span class="text-green-400 text-xs font-medium">Monitor: Active</span>
+                        <button onclick="controlMonitor('stop')"
+                                class="px-3 py-1 bg-red-900/60 hover:bg-red-800 text-red-200 rounded-full text-xs font-medium transition border border-red-800">
+                            Stop
+                        </button>
                     {% else %}
-                        <span class="h-2.5 w-2.5 rounded-full bg-slate-500"></span>
-                        <span class="text-slate-400 text-xs font-medium">Monitor: Offline</span>
+                        <button onclick="controlMonitor('start')"
+                                class="px-3 py-1 bg-green-900/60 hover:bg-green-800 text-green-200 rounded-full text-xs font-medium transition border border-green-800">
+                            Start
+                        </button>
                     {% endif %}
+
                 </div>
 
                 <a href="/" class="hover:text-red-400">Dashboard</a>
@@ -67,6 +86,19 @@
     <main class="max-w-7xl mx-auto px-6 py-8">
         {% block content %}{% endblock %}
     </main>
+
+    <!-- monitor control script -->
+    <!-- start/stop sends a POST to flask and then reloads so the navbar updates -->
+    <script>
+        function controlMonitor(action) {
+            fetch("/monitor/" + action, { method: "POST" })
+                .then(() => {
+                    // small delay so the subprocess actually starts before we reload
+                    setTimeout(() => window.location.reload(), 500);
+                })
+                .catch(err => alert("Error: " + err.message));
+        }
+    </script>
 
 </body>
 </html>

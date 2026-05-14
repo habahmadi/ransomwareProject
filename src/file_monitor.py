@@ -38,7 +38,7 @@ ALERTS_FILE = os.path.join(LOG_FOLDER, "alerts.csv")
 MODEL_PATH = os.path.join(project_root, "models", "ransomware_model.pkl")
 
 # load the trained model once when the program starts
-# put it in try/except so that the monitor still works if the model isnt trained yet
+# try/except so it still runs if the model isnt trained
 try:
     model = joblib.load(MODEL_PATH)
     print("Loaded model from", MODEL_PATH)
@@ -47,14 +47,13 @@ except FileNotFoundError:
     print("WARNING: no trained model found at", MODEL_PATH)
     print("Monitor will run but no ML detection will happen")
 
-# keep up to 200 recent events, anything older then just falls off
-# using deque so there is no reason to manually trim a list
+# keep last 200 events, deque auto-trims older ones
 recent_events = deque(maxlen=200)
 
 # how many seconds back the live sliding window looks (which matches training)
 LIVE_WINDOW_SECS = 5
 
-# track when an alert was last fired so there's no spam
+# track last alert time to avoid spam
 last_alert_time = None
 ALERT_COOLDOWN = 10
 
@@ -151,7 +150,7 @@ def get_live_features():
         if honey_touched == 1:
             break
 
-    # return as a dict using the SAME column names as training and it has to be in order
+    # same column order as training
     return {
         "total_events": total,
         "num_created": num_created,

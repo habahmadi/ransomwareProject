@@ -1,6 +1,5 @@
-# handles the remediation side of the system
-# when an alert fires a snapshot of the watched folder needs to be preserved
-# so the user can recover their files if the attack continues
+# remediation: when an alert fires I take a snapshot of the watched folder
+# so files can be recovered if the attack keeps going
 
 import os
 import shutil

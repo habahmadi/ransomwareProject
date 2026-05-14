@@ -120,7 +120,7 @@ def create_multiple_files():
 
 
 # this function simulates ransomware behaviour
-# it quickly modifies and renames many files which is typical behaviour for ransomware
+# quickly modifies and renames many files like ransomware does
 def ransomware_attack():
 
     # loop through every file inside test folder
@@ -177,6 +177,9 @@ def choose_simulation():
 
         # clean up between rounds so each one starts fresh
         clean_test_environment()
+
+        # always make sure honeyfiles exist before any simulation runs
+        create_honeyfiles()
 
         if choice == "1":
             normal_behaviour()

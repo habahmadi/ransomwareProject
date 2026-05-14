@@ -1,6 +1,5 @@
-# this file creates honeyfiles which are decoy files
-# they sit in test_environment doing nothing, but if anything touches them
-# it should be treated as a strong sign that theres malicious activity
+# creates decoy honeyfiles in test_environment
+# if anything touches them its probably ransomware
 
 import os
 
@@ -10,7 +9,6 @@ root = os.path.dirname(cur)
 TEST_FOLDER = os.path.join(root, "test_environment")
 
 # list of honeyfile names
-# use a simple list so they can be referenced from other files
 HONEY_NAMES = [
     "_AAA_passwords.txt",
     "_AAA_backup_keys.txt",
@@ -25,7 +23,7 @@ def create_honeyfiles():
 
     for name in HONEY_NAMES:
         path = os.path.join(TEST_FOLDER, name)
-        # only create if it doesnt already exist so we dont accidentally overwrite
+        # only create if it doesnt exist
         if not os.path.exists(path):
             with open(path, "w") as f:
                 f.write("DO NOT TOUCH - this is a decoy file used for ransomware detection.\n")

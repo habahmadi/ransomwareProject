@@ -1,5 +1,5 @@
-# this turns the raw event log into sliding-window features for the ML model
-# for each event we look at what happened in the last few seconds before it
+# this turns the event log into features for the ML model
+# for each event I look at what happened in the last few seconds before it
 
 import os
 import pandas as pd
@@ -42,14 +42,13 @@ def extract_features(window):
     total = len(window)
 
     # count each event type
-    # comparing the column to a string returns True/False for each row
     num_created = (window["event_type"] == "created").sum()
     num_modified = (window["event_type"] == "modified").sum()
     num_deleted = (window["event_type"] == "deleted").sum()
     num_renamed = (window["event_type"] == "moved_or_renamed").sum()
 
-    # count how many renames ended in .locked extension (textbook ransomware behaviour)
-    # then use fillna("") so we dont crash on empty cells
+    # count how many renames ended in .locked since ransomware does this
+    # fillna("") so it doesnt crash on empty cells
     dest = window["dest_path"].fillna("").astype(str).str.lower()
     num_locked = dest.str.endswith(".locked").sum()
 
@@ -86,7 +85,7 @@ def build_features(path, label):
         w = get_window_events(i, df)
         feats = extract_features(w)
         feats["timestamp"] = df.loc[i, "timestamp"]
-        # tag every row with its label so the ML model knows what it is
+        # label each row
         feats["label"] = label
         rows.append(feats)
 
@@ -98,8 +97,8 @@ if __name__ == "__main__":
     normal_path = os.path.join(root, "logs", "normal_events.csv")
     ransom_path = os.path.join(root, "logs", "ransomware_events.csv")
 
-    # extract features from both and then labelling as we go
-    # so we set 0 = normal, 1 = ransomware
+    # extract features from both
+    # 0 = normal, 1 = ransomware
     print("Extracting features from normal events...")
     normal_df = build_features(normal_path, 0)
     print("Got", len(normal_df), "normal feature rows")
